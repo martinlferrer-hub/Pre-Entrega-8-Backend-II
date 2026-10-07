@@ -1,0 +1,121 @@
+[1mdiff --git a/src/dao/events.dao.js b/src/dao/events.dao.js[m
+[1mnew file mode 100644[m
+[1mindex 0000000..6948dc5[m
+[1m--- /dev/null[m
+[1m+++ b/src/dao/events.dao.js[m
+[36m@@ -0,0 +1,37 @@[m
+[32m+[m[32mimport { EventModel } from "../models/Event.js";[m
+[32m+[m
+[32m+[m[32mconst publicProjection = "title description category date location capacity price status organizer createdAt updatedAt";[m
+[32m+[m
+[32m+[m[32mexport const eventsDao = {[m
+[32m+[m[32m  findPublished() {[m
+[32m+[m[32m    return EventModel.find({ status: "published" }).select(publicProjection).sort({ date: 1 }).lean();[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  findById(id) {[m
+[32m+[m[32m    return EventModel.findById(id);[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  create(eventData) {[m
+[32m+[m[32m    return EventModel.create(eventData);[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  updateById(id, eventData) {[m
+[32m+[m[32m    return EventModel.findByIdAndUpdate(id, eventData, {[m
+[32m+[m[32m      new: true,[m
+[32m+[m[32m      runValidators: true[m
+[32m+[m[32m    });[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  findMany(filter, { skip, limit, sort }) {[m
+[32m+[m[32m    return EventModel.find(filter)[m
+[32m+[m[32m      .select(publicProjection)[m
+[32m+[m[32m      .sort(sort)[m
+[32m+[m[32m      .skip(skip)[m
+[32m+[m[32m      .limit(limit)[m
+[32m+[m[32m      .lean();[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  count(filter) {[m
+[32m+[m[32m    return EventModel.countDocuments(filter);[m
+[32m+[m[32m  }[m
+[32m+[m[32m};[m
+[1mdiff --git a/src/dao/tickets.dao.js b/src/dao/tickets.dao.js[m
+[1mnew file mode 100644[m
+[1mindex 0000000..2e1d44e[m
+[1m--- /dev/null[m
+[1m+++ b/src/dao/tickets.dao.js[m
+[36m@@ -0,0 +1,49 @@[m
+[32m+[m[32mimport { TicketModel } from "../models/Ticket.js";[m
+[32m+[m
+[32m+[m[32mexport const ticketsDao = {[m
+[32m+[m[32m  create(ticketData) {[m
+[32m+[m[32m    return TicketModel.create(ticketData);[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  findById(id) {[m
+[32m+[m[32m    return TicketModel.findById(id);[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  findActiveByUserAndEvent(userId, eventId) {[m
+[32m+[m[32m    return TicketModel.findOne({[m
+[32m+[m[32m      user: userId,[m
+[32m+[m[32m      event: eventId,[m
+[32m+[m[32m      status: { $in: ["confirmed", "pending"] }[m
+[32m+[m[32m    });[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  findByUser(userId) {[m
+[32m+[m[32m    return TicketModel.find({ user: userId })[m
+[32m+[m[32m      .sort({ createdAt: -1 })[m
+[32m+[m[32m      .populate("event", "title date location")[m
+[32m+[m[32m      .lean();[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  findByEvent(eventId) {[m
+[32m+[m[32m    return TicketModel.find({ event: eventId })[m
+[32m+[m[32m      .sort({ createdAt: -1 })[m
+[32m+[m[32m      .populate("user", "first_name last_name email role")[m
+[32m+[m[32m      .populate("event", "title date location")[m
+[32m+[m[32m      .lean();[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  sumActiveQuantityByEvent(eventId) {[m
+[32m+[m[32m    return TicketModel.aggregate([[m
+[32m+[m[32m      { $match: { event: eventId, status: { $in: ["confirmed", "pending"] } } },[m
+[32m+[m[32m      { $group: { _id: null, quantity: { $sum: "$quantity" } } }[m
+[32m+[m[32m    ]).then((result) => result[0]?.quantity ?? 0);[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  cancelById(id) {[m
+[32m+[m[32m    return TicketModel.findByIdAndUpdate([m
+[32m+[m[32m      id,[m
+[32m+[m[32m      { status: "cancelled", cancelledAt: new Date() },[m
+[32m+[m[32m      { new: true, runValidators: true }[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }[m
+[32m+[m[32m};[m
+[1mdiff --git a/src/dao/users.dao.js b/src/dao/users.dao.js[m
+[1mnew file mode 100644[m
+[1mindex 0000000..e9adb62[m
+[1m--- /dev/null[m
+[1m+++ b/src/dao/users.dao.js[m
+[36m@@ -0,0 +1,17 @@[m
+[32m+[m[32mimport { UserModel } from "../models/User.js";[m
+[32m+[m
+[32m+[m[32mexport const usersDao = {[m
+[32m+[m[32m  findByEmail(email) {[m
+[32m+[m[32m    return UserModel.findOne({ email }).select("+password");[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  create(userData) {[m
+[32m+[m[32m    return UserModel.create(userData);[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  findAllSafe() {[m
+[32m+[m[32m    return UserModel.find()[m
+[32m+[m[32m      .select("first_name last_name email role createdAt updatedAt")[m
+[32m+[m[32m      .lean();[m
+[32m+[m[32m  }[m
+[32m+[m[32m};[m
