@@ -1,0 +1,31 @@
+{
+  "name": "eventos",
+  "version": "1.1.0",
+  "description": "API REST para plataforma de eventos e inscripciones - Pre-entrega 8 DAO Repository DTO",
+  "license": "ISC",
+  "author": "Martin Ferrer",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "nodemon": "nodemon src/server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.9.1",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "jsonwebtoken": "^9.0.2",
+    "passport": "^0.7.0",
+    "passport-custom": "^1.1.1",
+    "passport-local": "^1.0.0",
+    "passport-jwt": "^4.0.1",
+    "nodemailer": "^7.0.9"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
